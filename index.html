@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LGS TÜRKÇE ROBOMAX</title>
+
+<!-- ✅ PWA ZORUNLU ETİKETLER -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#00A2FF">
+<link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ROBOMAX">
+
+<style>
+:root { 
+    --bg-color: #ffffff; --neon-color: #00A2FF; --btn-bg: #ffffff;
+    --btn-txt: #000000; --btn-border: #00A2FF; --cont-bg: #ffffff;
+    --status-bg: #00A2FF;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0;
+    background: var(--bg-color); 
+    display: flex; justify-content: center; align-items: center; 
+    min-height: 100vh; transition: background 0.3s; overflow: hidden;
+}
+
+.quiz-container {
+    background: var(--cont-bg); 
+    padding: clamp(8px, 2vw, 20px);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+    width: 98%;
+    max-width: 96vw;
+    max-height: 98vh;
+    display: flex; flex-direction: column; justify-content: center;
+    text-align: center; position: relative; border: 8px solid var(--neon-color);
+    box-sizing: border-box; overflow-y: auto; transition: all 0.3s;
+}
+
+select { 
+    flex: 1; height: 55px; padding: 0 15px; border: 3px solid var(--neon-color); 
+    border-radius: 12px; font-size: 18px; font-weight: bold; background: white; color: black;
+    outline: none; cursor: pointer; appearance: none;
+    overflow-y: auto;
+}
+
+select::-webkit-scrollbar { width: 8px; }
+select::-webkit-scrollbar-thumb { background: var(--neon-color); border-radius: 10px; }
+select:disabled { opacity: 0.5; cursor: not-allowed; background: #f0f0f0; }
+
+.robomax { font-size: clamp(40px, 6vw, 80px); margin-bottom: 5px; }
+
+.select-row { 
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px; 
+    width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;
+}
+
+.lock-area {
+    display: flex; align-items: center; justify-content: center;
+    background: white; border: 3px solid var(--neon-color);
+    border-radius: 12px; height: 55px; min-width: 65px; box-sizing: border-box;
+}
+.lock-area input { width: 25px; height: 25px; cursor: pointer; }
+.lock-emoji { font-size: 20px; margin-right: 2px; }
+
+#startButton { 
+    width: 100%; max-width: 500px; height: 70px; background: var(--neon-color); color: #fff; 
+    border: none; border-radius: 15px; font-size: 28px; cursor: pointer; font-weight: 900;
+    margin: 10px auto; display: block;
+}
+
+.result-panel {
+    background: rgba(0,0,0,0.05); 
+    border-radius: 15px; 
+    padding: clamp(10px, 2vw, 20px); 
+    margin: 15px auto;
+    width: 98%; 
+    max-width: 450px; 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.result-item { 
+    padding: 10px; background: white; border-radius: 10px; 
+    border: 2px solid var(--neon-color); font-weight: 800; 
+    font-size: clamp(14px, 2vw, 18px); box-sizing: border-box;
+}
+
+.result-full { 
+    grid-column: span 2; font-size: clamp(18px, 3vw, 24px); 
+    background: var(--neon-color); color: white; 
+}
+
+.status-bar { 
+    display: flex; justify-content: space-between; 
+    gap: clamp(5px, 1.5vw, 10px); margin-bottom: 10px; width: 100%;
+}
+
+.status-bar div { 
+    flex: 1; padding: clamp(8px, 1.5vw, 12px); border-radius: 12px; 
+    color: white; font-weight: 800; font-size: clamp(12px, 1.8vw, 18px); 
+    box-sizing: border-box;
+}
+
+.question-area { 
+    background: rgba(255,255,255,0.8); padding: clamp(12px, 3vw, 30px); 
+    border-radius: 15px; margin: 10px 0; border: 3px solid var(--neon-color); 
+    width: 100%; box-sizing: border-box; max-height: 300px; overflow-y: auto;
+}
+
+#question { 
+    font-size: clamp(18px, 3vw, 32px); color: #000; margin: 0; 
+    line-height: 1.4; font-weight: 800; word-wrap: break-word;
+}
+
+#options { 
+    display: grid; grid-template-columns: 1fr; 
+    gap: 10px; margin-top: 12px; width: 100%; 
+}
+
+@media (min-width: 768px) { 
+    #options { grid-template-columns: 1fr 1fr; } 
+}
+
+.option-btn { 
+    width: 100%; padding: clamp(10px, 2.2vw, 20px); 
+    border: 3px solid var(--neon-color); border-radius: 12px; 
+    background-color: #ffffff; color: #000; font-size: clamp(15px, 2.2vw, 24px); 
+    font-weight: 700; cursor: pointer; outline: none; 
+    transition: background 0.2s; box-sizing: border-box; word-wrap: break-word;
+}
+
+.correct { background-color: #00b894 !important; color: white !important; border-color: #00b894 !important; }
+.wrong   { background-color: #d63031 !important; color: white !important; border-color: #d63031 !important; }
+.hidden  { display: none; }
+
+.action-btn { 
+    font-size: clamp(25px, 5vw, 35px); cursor: pointer; background: #ffffff; 
+    color: #000; border: 4px solid var(--neon-color); border-radius: 15px; 
+    padding: 10px; flex: 1; font-weight: bold; display: flex; 
+    align-items: center; justify-content: center; transition: 0.2s; box-sizing: border-box;
+}
+
+.app-robot { font-size: clamp(60px, 12vw, 90px); margin-bottom: 10px; display: block; }
+.action-btn:active { transform: scale(0.95); }
+.btn-label { font-size: 12px; margin-top: 5px; display: block; font-weight: 900; }
+
+#quizContent { max-height: 70vh; overflow-y: auto; padding-right: 5px; }
+
+#quizContent::-webkit-scrollbar,
+.question-area::-webkit-scrollbar { width: 6px; }
+
+#quizContent::-webkit-scrollbar-thumb,
+.question-area::-webkit-scrollbar-thumb { background: var(--neon-color); border-radius: 10px; }
+
+#quizContent::-webkit-scrollbar-track,
+.question-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<div class="quiz-container">
+
+    <!-- BAŞLANGIÇ EKRANI -->
+    <div id="startScreen">
+        <div class="app-robot">🤖</div>
+        <h1 style="font-size: clamp(22px, 4vw, 36px); margin-bottom: 20px;">LGS TÜRKÇE ROBOMAX</h1>
+
+        <div class="select-row">
+            <select id="classSelect" onchange="updateMainTopics()">
+                <option value="">Sınıf Seçiniz</option>
+                <option value="5">5. Sınıf</option>
+                <option value="6">6. Sınıf</option>
+                <option value="7">7. Sınıf</option>
+                <option value="8">8. Sınıf</option>
+            </select>
+            <div class="lock-area">
+                <span class="lock-emoji">🔒</span>
+                <input type="checkbox" id="lockClass">
+            </div>
+        </div>
+
+        <div class="select-row">
+            <select id="mainTopicSelect" disabled>
+                <option value="">Konu Seçiniz</option>
+            </select>
+        </div>
+
+        <div class="select-row">
+            <select id="themeSelect" onchange="applyTheme(this.value)"></select>
+        </div>
+
+        <div class="select-row">
+            <select id="musicSelect"><option value="">Müzik Seçimi</option></select>
+        </div>
+
+        <button id="startButton" onclick="startQuiz()">BAŞLA 🚀</button>
+        <button type="button" onclick="window.location.href='hakkimda.html'"
+            style="background:none; border:none; color:#00A2FF; text-decoration:underline; cursor:pointer; margin-top:15px; width:100%;">
+            ℹ️ Hazırlayan & Hakkında
+        </button>
+    </div>
+
+    <!-- TEST EKRANI -->
+    <div id="quizContent" class="hidden">
+        <div class="status-bar">
+            <div id="canDisp" style="background:#d63031">❤️❤️❤️</div>
+            <div style="background:#2d3436">⏱️ <span id="timeDisp">0</span>s</div>
+            <div id="scoreBox" style="background:var(--status-bg)">Puan: <span id="currentScore">0</span></div>
+        </div>
+        <div class="question-area"><h3 id="question"></h3></div>
+        <div id="options"></div>
+    </div>
+
+    <!-- SONUÇ EKRANI -->
+    <div id="scoreScreen" class="hidden">
+        <div class="robomax">🏆</div>
+        <h1>SONUÇLAR</h1>
+        <div class="result-panel">
+            <div class="result-item result-full">PUAN: <span id="finalScore">0</span></div>
+            <div class="result-item">SÜRE: <span id="finalTime">0</span>s</div>
+            <!-- ✅ NET: doğru - (yanlış / 3) -->
+            <div class="result-item">NET: <span id="finalNet">0</span></div>
+            <div class="result-item" style="color:#00b894">DOĞRU: <span id="finalCorrect">0</span></div>
+            <div class="result-item" style="color:#d63031">YANLIŞ: <span id="finalWrong">0</span></div>
+        </div>
+
+        <div style="max-width:400px; margin:20px auto 0 auto;">
+            <div style="display:flex; width:100%; border:3px solid var(--neon-color); border-radius:15px; overflow:hidden; background:white; box-sizing:border-box;">
+                <div class="action-btn" onclick="restartQuiz()" style="flex:1; border:none; border-right:2px solid var(--neon-color); border-radius:0; margin:0; padding:10px 5px;">
+                    <div>🔄<span class="btn-label">TEKRAR</span></div>
+                </div>
+                <div class="action-btn" onclick="goHome()" style="flex:1; border:none; border-right:2px solid var(--neon-color); border-radius:0; margin:0; padding:10px 5px;">
+                    <div>➡️<span class="btn-label">DİĞER TEST</span></div>
+                </div>
+                <div class="action-btn" onclick="location.reload()" style="flex:1; border:none; border-radius:0; margin:0; padding:10px 5px;">
+                    <div>🏠<span class="btn-label">ANASAYFA</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<audio id="bgAudio" loop></audio>
+<audio id="correctSfx" src="SESLER/dogru.mp3" preload="auto"></audio>
+<audio id="wrongSfx"   src="SESLER/hata.mp3"  preload="auto"></audio>
+
+<!-- ✅ SORULAR AYRI DOSYADAN GELİYOR -->
+<script src="./sorular.js"></script>
+
+<script>
+const themes = {
+    "1. Klasik Mavi": { bg: "#ffffff", neon: "#00A2FF", cont: "#ffffff" },
+    "2. Turkuaz":     { bg: "#e0f2f1", neon: "#00897b", cont: "#f3fbfb" },
+    "3. Lavanta":     { bg: "#f3e5f5", neon: "#7b1fa2", cont: "#faf5fb" },
+    "4. Doğa":        { bg: "#f1f8e9", neon: "#558b2f", cont: "#f9fdf5" },
+    "5. Gün Batımı":  { bg: "#fff3e0", neon: "#e65100", cont: "#fffaf3" },
+    "6. Okyanus":     { bg: "#e1f5fe", neon: "#0277bd", cont: "#f1faff" },
+    "7. Kahve":       { bg: "#efebe9", neon: "#5d4037", cont: "#f7f5f4" },
+    "8. Soft Gri":    { bg: "#eceff1", neon: "#546e7a", cont: "#ffffff" },
+    "9. Rose":        { bg: "#fce4ec", neon: "#c2185b", cont: "#fff1f4" },
+    "10. Limon":      { bg: "#fffde7", neon: "#fbc02d", cont: "#fffffa" }
+};
+
+let score=0, currentQ=0, lives=3, activeQs=[], timerInt, timeElapsed=0, pointPerQ=0;
+let correctCount=0, wrongCount=0, lastAnswers=[];
+const bgAudio = document.getElementById("bgAudio");
+
+window.onload = () => {
+    Object.keys(themes).forEach(t => themeSelect.innerHTML += `<option value="${t}">${t}</option>`);
+    for(let i=1; i<=5; i++) musicSelect.innerHTML += `<option value="SESLER/Muzik-${i}.mp3">Müzik ${i}</option>`;
+    applyTheme("1. Klasik Mavi");
+    if(localStorage.getItem("savedClass")) {
+        classSelect.value = localStorage.getItem("savedClass");
+        document.getElementById("lockClass").checked = true;
+        updateMainTopics();
+    }
+};
+
+function updateMainTopics() {
+    const s = classSelect.value;
+    if(s) {
+        mainTopicSelect.disabled = false;
+        mainTopicSelect.innerHTML = '<option value="">Konu Seçiniz</option>';
+        Object.keys(quizData[s]).forEach(k => mainTopicSelect.innerHTML += `<option value="${k}">${k}</option>`);
+    } else {
+        mainTopicSelect.disabled = true;
+        mainTopicSelect.innerHTML = '<option value="">Konu Seçiniz</option>';
+    }
+}
+
+function applyTheme(key) {
+    const t = themes[key]; const r = document.documentElement.style;
+    r.setProperty('--bg-color', t.bg);
+    r.setProperty('--neon-color', t.neon);
+    r.setProperty('--cont-bg', t.cont);
+    r.setProperty('--status-bg', t.neon);
+}
+
+startButton.onclick = () => {
+    if(!classSelect.value || !mainTopicSelect.value) return alert("Sınıf ve Konu Seçiniz!");
+    if(quizData[classSelect.value][mainTopicSelect.value].length === 0) return alert("Soru yok!");
+    if(document.getElementById("lockClass").checked) localStorage.setItem("savedClass", classSelect.value);
+    else localStorage.removeItem("savedClass");
+    if(musicSelect.value) { bgAudio.src = musicSelect.value; bgAudio.play().catch(()=>{}); }
+    initQuiz();
+};
+
+function initQuiz() {
+    const s = classSelect.value; const t = mainTopicSelect.value;
+    activeQs = [...quizData[s][t]].sort(() => Math.random() - 0.5);
+    pointPerQ = 100 / activeQs.length;
+    score=0; currentQ=0; lives=3; timeElapsed=0; correctCount=0; wrongCount=0; lastAnswers=[];
+    document.getElementById("currentScore").textContent = "0";
+    updateLives();
+    clearInterval(timerInt);
+    timerInt = setInterval(() => { timeElapsed++; timeDisp.textContent = timeElapsed; }, 1000);
+    startScreen.classList.add("hidden");
+    quizContent.classList.remove("hidden");
+    scoreScreen.classList.add("hidden");
+    loadQuestion();
+}
+
+function loadQuestion() {
+    if(currentQ >= activeQs.length || lives <= 0) return finish();
+    const qData = activeQs[currentQ];
+    question.textContent = qData.q;
+    options.innerHTML = "";
+
+    let choices = qData.a.map((text, idx) => ({ text, isCorrect: idx === qData.c }));
+    let shuffledChoices, attempts = 0;
+    do {
+        shuffledChoices = [...choices].sort(() => Math.random() - 0.5);
+        let curIdx = shuffledChoices.findIndex(c => c.isCorrect);
+        var tooMany = lastAnswers.length >= 3 && lastAnswers.every(i => i === curIdx);
+        attempts++;
+    } while(tooMany && attempts < 15);
+
+    let correctIdx = shuffledChoices.findIndex(c => c.isCorrect);
+    lastAnswers.push(correctIdx);
+    if(lastAnswers.length > 3) lastAnswers.shift();
+
+    shuffledChoices.forEach((choice) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = choice.text;
+        btn.onclick = () => {
+            Array.from(options.children).forEach(b => b.style.pointerEvents = "none");
+            if(choice.isCorrect) {
+                const s = document.getElementById("correctSfx");
+                s.currentTime = 0; s.play().catch(()=>{});
+                btn.classList.add("correct");
+                score += pointPerQ; correctCount++;
+                document.getElementById("currentScore").textContent = Math.round(score);
+                setTimeout(() => { currentQ++; loadQuestion(); }, 1200);
+            } else {
+                const s = document.getElementById("wrongSfx");
+                s.currentTime = 0; s.play().catch(()=>{});
+                btn.classList.add("wrong");
+                lives--; wrongCount++;
+                updateLives();
+                setTimeout(() => {
+                    options.children[correctIdx].classList.add("correct");
+                    setTimeout(() => { currentQ++; loadQuestion(); }, 1000);
+                }, 1000);
+            }
+        };
+        options.appendChild(btn);
+    });
+}
+
+function updateLives() {
+    let h = "";
+    for(let i=0; i<3; i++) h += (i < lives) ? "❤️" : "🖤";
+    canDisp.textContent = h;
+}
+
+function finish() {
+    clearInterval(timerInt); bgAudio.pause();
+    // ✅ DÜZELTILDI: LGS net formülü = doğru - (yanlış / 3)
+    const net = correctCount - (wrongCount / 3);
+    finalScore.textContent   = Math.round(score);
+    finalTime.textContent    = timeElapsed;
+    finalCorrect.textContent = correctCount;
+    finalWrong.textContent   = wrongCount;
+    finalNet.textContent     = net.toFixed(2);
+    quizContent.classList.add("hidden");
+    scoreScreen.classList.remove("hidden");
+}
+
+function restartQuiz() { initQuiz(); }
+function goHome() {
+    scoreScreen.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+    mainTopicSelect.value = "";
+}
+</script>
+
+<!-- ✅ SERVICE WORKER KAYDI -->
+<script>
+    if('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('✅ ROBOMAX PWA hazır!', reg.scope))
+                .catch(err => console.log('❌ SW hatası:', err));
+        });
+    }
+</script>
+
+</body>
+</html>
