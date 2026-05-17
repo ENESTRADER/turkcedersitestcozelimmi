@@ -1,0 +1,46 @@
+name: Robomax Local WebToAPK Derleyici
+
+on:
+  workflow_dispatch: # Bu satır, paketi canın istediğinde tek tıkla üretmeni sağlar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Kodları Buluta Çek
+      uses: actions/checkout@v4
+
+    - name: Hazır WebView Altyapısını Kur
+      run: |
+        git clone https://github.com/hiteshsahu/Android-Webview-App.git android-project
+        cd android-project
+        rm -rf app/src/main/assets/*
+        
+    - name: Senin HTML ve JS Dosyalarını Android'in İçine Göm
+      run: |
+        cp index.html android-project/app/src/main/assets/
+        cp sorular.js android-project/app/src/main/assets/
+        # Varsa diğer dosyaları da otomatik kopyala
+        cp -r *.css *.js *.png *.jpg *.json android-project/app/src/main/assets/ 2>/dev/null || true
+
+    - name: Java Sürücülerini Yükle
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Android SDK ile Derleme İşlemini Başlat
+      run: |
+        cd android-project
+        chmod +x gradlew
+        ./gradlew assembleDebug # Test etmek için hızlı APK üretir
+        ./gradlew bundleRelease  # Play Store için AAB üretir
+
+    - name: Paketleri Hazırla ve Teslim Et
+      uses: actions/upload-artifact@v4
+      with:
+        name: Robomax-Android-Paketleri
+        path: |
+          android-project/app/build/outputs/apk/debug/app-debug.apk
+          android-project/app/build/outputs/bundle/release/app-release.aab
